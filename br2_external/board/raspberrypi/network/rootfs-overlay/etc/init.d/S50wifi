@@ -1,0 +1,70 @@
+#!/bin/sh
+#
+# Start WiFi connection after boot (non-blocking)
+#
+
+DAEMON="wpa_supplicant"
+PIDFILE="/var/run/${DAEMON}.pid"
+WPA_CONF="/etc/wpa_supplicant/wpa_supplicant.conf"
+
+# Check if any networks are configured
+has_networks() {
+    grep -q "^[[:space:]]*ssid=" "$WPA_CONF" 2>/dev/null
+}
+
+start() {
+    # Skip if no networks configured
+    if ! has_networks; then
+        echo "No WiFi networks configured, skipping"
+        return 0
+    fi
+
+    printf "Starting %s: " "$DAEMON"
+
+    # Load WiFi driver if not loaded
+    modprobe brcmfmac 2>/dev/null || true
+
+    # Wait for wlan0 to appear (max 5 seconds)
+    for i in $(seq 1 50); do
+        [ -d /sys/class/net/wlan0 ] && break
+        usleep 100000
+    done
+
+    if [ ! -d /sys/class/net/wlan0 ]; then
+        echo "FAIL (no wlan0)"
+        return 1
+    fi
+
+    # Start wpa_supplicant in background
+    start-stop-daemon -S -q -b -m -p "$PIDFILE" \
+        --exec /usr/sbin/wpa_supplicant -- \
+        -B -Dnl80211 -iwlan0 -c"$WPA_CONF"
+
+    # Start DHCP in background (non-blocking)
+    ( sleep 2 && udhcpc -i wlan0 -b -q ) &
+
+    echo "OK"
+}
+
+stop() {
+    printf "Stopping %s: " "$DAEMON"
+    start-stop-daemon -K -q -p "$PIDFILE"
+    killall -q udhcpc
+    echo "OK"
+}
+
+restart() {
+    stop
+    start
+}
+
+case "$1" in
+    start|stop|restart)
+        "$1"
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

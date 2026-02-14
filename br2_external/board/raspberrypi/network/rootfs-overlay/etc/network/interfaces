@@ -1,0 +1,15 @@
+# Loopback
+auto lo
+iface lo inet loopback
+
+# Ethernet (if present)
+auto eth0
+iface eth0 inet dhcp
+    wait-delay 5
+
+# WiFi - managed by late-start init script
+# NOT set to auto to avoid blocking boot
+iface wlan0 inet dhcp
+    pre-up wpa_supplicant -B -Dnl80211 -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf
+    post-down killall -q wpa_supplicant
+    wait-delay 10
