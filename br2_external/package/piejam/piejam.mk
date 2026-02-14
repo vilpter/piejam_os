@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-PIEJAM_VERSION = feature/network
+PIEJAM_VERSION = master
 PIEJAM_SITE = https://github.com/vilpter/piejam.git
 PIEJAM_SITE_METHOD = git
 PIEJAM_GIT_SUBMODULES = YES
