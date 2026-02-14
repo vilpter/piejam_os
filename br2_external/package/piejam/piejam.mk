@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-PIEJAM_VERSION = v0.12.0
-PIEJAM_SITE = https://github.com/nooploop/piejam.git
+PIEJAM_VERSION = feature/network
+PIEJAM_SITE = https://github.com/vilpter/piejam.git
 PIEJAM_SITE_METHOD = git
 PIEJAM_GIT_SUBMODULES = YES
 PIEJAM_LICENSE = GPL-3.0-or-later
