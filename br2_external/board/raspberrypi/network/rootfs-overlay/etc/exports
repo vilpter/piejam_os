@@ -1,0 +1,8 @@
+# PieJam NFS Exports
+# Format: /path/to/export client_spec(options)
+#
+# Runtime exports managed in /etc/piejam/exports
+# and merged at service start.
+#
+# Example (uncomment to enable):
+# /home/piejam/recordings 192.168.0.0/24(rw,sync,no_subtree_check,no_root_squash)

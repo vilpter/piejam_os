@@ -1,0 +1,94 @@
+#!/bin/sh
+#
+# NFS server startup (depends on network)
+#
+
+EXPORTS_FILE="/etc/exports"
+EXPORTS_RUNTIME="/etc/piejam/exports"
+
+# Merge runtime exports with static exports
+prepare_exports() {
+    cat "$EXPORTS_FILE" > /tmp/exports.merged 2>/dev/null || true
+    if [ -f "$EXPORTS_RUNTIME" ]; then
+        cat "$EXPORTS_RUNTIME" >> /tmp/exports.merged
+    fi
+    mv /tmp/exports.merged "$EXPORTS_FILE"
+}
+
+start() {
+    # Skip if no exports configured
+    if [ ! -s "$EXPORTS_FILE" ] && [ ! -s "$EXPORTS_RUNTIME" ]; then
+        echo "No NFS exports configured, skipping"
+        return 0
+    fi
+
+    printf "Starting NFS services: "
+
+    # Ensure directories exist
+    mkdir -p /var/lib/nfs/sm
+    mkdir -p /var/lib/nfs/sm.bak
+    mkdir -p /var/lib/nfs/v4recovery
+    mkdir -p /run/rpc_pipefs
+
+    prepare_exports
+
+    # Start rpcbind
+    if ! pidof rpcbind > /dev/null; then
+        rpcbind
+        sleep 1
+    fi
+
+    # Mount required filesystems
+    mount -t rpc_pipefs rpc_pipefs /var/lib/nfs/rpc_pipefs 2>/dev/null || true
+
+    # Load NFS module
+    modprobe nfsd 2>/dev/null || true
+
+    # Mount nfsd filesystem
+    mount -t nfsd nfsd /proc/fs/nfsd 2>/dev/null || true
+
+    # Export and start
+    exportfs -ra
+    rpc.nfsd 8
+    rpc.mountd
+
+    echo "OK"
+}
+
+stop() {
+    printf "Stopping NFS services: "
+    exportfs -au 2>/dev/null || true
+    killall -q rpc.mountd
+    killall -q nfsd
+    umount /proc/fs/nfsd 2>/dev/null || true
+    echo "OK"
+}
+
+reload() {
+    printf "Reloading NFS exports: "
+    prepare_exports
+    exportfs -ra
+    echo "OK"
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        sleep 1
+        start
+        ;;
+    reload)
+        reload
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|reload}"
+        exit 1
+esac
+
+exit $?
