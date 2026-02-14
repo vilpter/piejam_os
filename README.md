@@ -40,6 +40,23 @@ make raspberrypi4
 make raspberrypi5
 ```
 
+### With Network Support (WiFi, NFS)
+
+#### Raspberry Pi 3B
+```
+make raspberrypi3-network
+```
+
+#### Raspberry Pi 4B
+```
+make raspberrypi4-network
+```
+
+#### Raspberry Pi 5B
+```
+make raspberrypi5-network
+```
+
 ## Installation
 The build step will create an image, which you need to copy to a microSD card:
 ```
