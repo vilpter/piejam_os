@@ -13,16 +13,18 @@ has_networks() {
 }
 
 start() {
-    # Skip if no networks configured
+    # Always unblock WiFi and load driver (piejam app needs wlan0
+    # even when no networks are pre-configured in wpa_supplicant.conf)
+    rfkill unblock wifi 2>/dev/null || true
+    modprobe brcmfmac 2>/dev/null || true
+
+    # Skip wpa_supplicant if no networks configured
     if ! has_networks; then
-        echo "No WiFi networks configured, skipping"
+        echo "No WiFi networks configured, skipping wpa_supplicant"
         return 0
     fi
 
     printf "Starting %s: " "$DAEMON"
-
-    # Load WiFi driver if not loaded
-    modprobe brcmfmac 2>/dev/null || true
 
     # Wait for wlan0 to appear (max 5 seconds)
     for i in $(seq 1 50); do
