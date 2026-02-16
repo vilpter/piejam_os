@@ -19,7 +19,7 @@ done
 
 # Check HDMI connectors for real "connected" status
 for hdmi in /sys/class/drm/card*-HDMI-A-*; do
-    if [[ -f "$hdmi/status" ]] && grep -q "connected" "$hdmi/status"; then
+    if [ -f "$hdmi/status" ] && grep -q "connected" "$hdmi/status"; then
         HDMI_BASE="$(basename "$hdmi")"
         HDMI_CARD="${HDMI_BASE%%-*}"
         HDMI_CONNECTOR="${HDMI_BASE#*-}"
@@ -50,6 +50,7 @@ cat > /piejam/eglfs.json <<EOF
 EOF
 
     export QT_QPA_EGLFS_KMS_CONFIG=/piejam/eglfs.json
+    export QV4_FORCE_INTERPRETER=1
 
     /usr/bin/piejam_app
 fi
