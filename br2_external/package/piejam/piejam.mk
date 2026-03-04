@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-PIEJAM_VERSION = 2c9bd22c6a9dffbbcd9228b26468d236108a20a8
+PIEJAM_VERSION = b4ed39afbd83dfb99b7382678b28b312c31765c9
 PIEJAM_SITE = https://github.com/vilpter/piejam.git
 PIEJAM_SITE_METHOD = git
 PIEJAM_GIT_SUBMODULES = YES
